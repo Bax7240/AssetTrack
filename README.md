@@ -125,6 +125,11 @@ classDiagram
     DataManager ..> Device
     DataManager ..> MaintenanceRecord
 ```
+### Class Relationships
+
+`Device` will serve as the abstract parent class, with `Laptop` and `Desktop` inheriting its shared properties and methods. Both subclasses will override `getDeviceType()` to demonstrate polymorphism.
+
+`InventoryManager` will maintain collections of devices and maintenance records, while `DataManager` will handle saving and loading information. `AssetTrackApp` will manage the JavaFX interface and communicate with these classes.
 
 The application will demonstrate inheritance, polymorphism, encapsulation, loops, conditions, and Java collections.
 
