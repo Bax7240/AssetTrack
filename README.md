@@ -10,7 +10,7 @@ AssetTrack is a Java desktop application designed to help IT departments organiz
 
 The application will allow users to register computers, record hardware specifications, track device assignments, update equipment status, and maintain basic repair records.
 
-This project is inspired by my experience working in IT support, where keeping accurate inventory records is important for managing equipment deployments, repairs, and replacements.
+This project is inspired by my experience working in the OU Tech Center, where keeping accurate inventory records is important for managing equipment deployments, repairs, and replacements.
 
 ### Planned Features
 - Add, edit, and remove computers from inventory.
@@ -127,11 +127,9 @@ classDiagram
 ```
 ### Class Relationships
 
-`Device` will serve as the abstract parent class, with `Laptop` and `Desktop` inheriting its shared properties and methods. Both subclasses will override `getDeviceType()` to demonstrate polymorphism.
+`Device` will serve as the abstract parent class, with `Laptop` and `Desktop` inheriting its shared properties and methods. Both subclasses will override `getDeviceType()`.
 
 `InventoryManager` will maintain collections of devices and maintenance records, while `DataManager` will handle saving and loading information. `AssetTrackApp` will manage the JavaFX interface and communicate with these classes.
-
-The application will demonstrate inheritance, polymorphism, encapsulation, loops, conditions, and Java collections.
 
 ## 3. Development Plan
 
