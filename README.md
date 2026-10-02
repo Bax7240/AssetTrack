@@ -146,7 +146,7 @@ This project will be completed individually. I will be responsible for designing
 ### Project Milestones
 - **October 2:** Submit project proposal and initial UML diagram.
   
-## Project Milestones Upcoming
+### Project Milestones Upcoming
 - **November 2:** Complete initial GUI design and implement one core class.
 - **November 16:** Complete inventory management functionality.
 - **November 30:** Complete application development and testing.
