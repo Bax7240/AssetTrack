@@ -159,4 +159,4 @@ This project will be completed individually. I will be responsible for designing
 - Local file storage
 - GitHub for version control and documentation
 
-*Project developed for CSI 2300 at Oakland University.*
+*Project developed for CSI 2300*
