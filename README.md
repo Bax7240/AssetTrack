@@ -22,9 +22,81 @@ This project is inspired by my experience working in the OU Tech Center, where k
 - Save and load inventory data locally.
 - Provide a graphical interface using JavaFX.
 
-## 2. Initial UML Class Design
+## Current Progress — October 12, 2026
 
-The application will use the following classes:
+The first two core classes and a console driver are implemented:
+
+| File | Current functionality |
+|---|---|
+| `Device.java` | Stores asset tag, manufacturer, model, serial number, processor, RAM, storage, status, and assignment; provides a constructor and getters/setters for all nine fields. |
+| `Laptop.java` | Holds a Device reference, battery health, and screen size; provides a constructor and getters/setters for all three fields. |
+| `DeviceDemo.java` | Creates a Device and Laptop, prints their information, and demonstrates updating status and assignment. |
+
+All three files compile, and the console demonstration runs successfully. JavaFX UI design, inventory management, maintenance history, validation, and local storage remain future work. Setters currently accept values directly without enforcing ranges or status options.
+
+### Current Class Design
+
+The implementation uses concepts covered in the supplied course lecture slides. `Device` is a regular class, and `Laptop` holds a reference to a Device instead of extending it. This differs from the original proposal below, which used an abstract superclass.
+
+The laptop accesses computer information through that reference, for example:
+
+```java
+laptop.getDevice().getSerialNumber()
+```
+
+```mermaid
+classDiagram
+    class Device {
+        -String assetTag
+        -String manufacturer
+        -String model
+        -String serialNumber
+        -String processor
+        -int ramGB
+        -int storageGB
+        -String status
+        -String assignedTo
+        +getAssetTag() String
+        +getStatus() String
+        +setStatus(String) void
+        +getAssignedTo() String
+        +setAssignedTo(String) void
+    }
+    class Laptop {
+        -Device device
+        -int batteryHealth
+        -double screenSize
+        +getDevice() Device
+        +setDevice(Device) void
+        +getBatteryHealth() int
+        +setBatteryHealth(int) void
+        +getScreenSize() double
+        +setScreenSize(double) void
+    }
+    class DeviceDemo {
+        +main(String[] args)$ void
+    }
+    Laptop --> Device : holds a reference
+    DeviceDemo ..> Device : creates and updates
+    DeviceDemo ..> Laptop : creates and reads
+```
+
+The diagram shows selected Device methods; the class has a getter and setter for every field.
+
+### Run the Console Demonstration
+
+With a JDK installed, run these commands from the directory containing the Java files:
+
+```bash
+javac Device.java Laptop.java DeviceDemo.java
+java DeviceDemo
+```
+
+The output includes the original computer information, its updated status and assignment, and the laptop's serial number, battery health, and screen size. JavaFX is not needed for this console demonstration.
+
+## 2. Original Proposal: UML Class Design
+
+The original proposal planned the following classes. This diagram is retained as the initial design; the current implementation and its revised relationship are documented above:
 
 | Class | Purpose |
 |---|---|
@@ -150,7 +222,7 @@ This project will be completed individually. I will be responsible for designing
 - **October 2:** Submit project proposal and initial UML diagram.
   
 ### Project Milestones Upcoming
-- **November 2:** Complete initial GUI design and implement one core class.
+- **November 2, 2026:** Complete the UI design and screenshot, implement at least two core classes with comments, and prepare a checkpoint plan and challenges/solutions table. The two core classes are implemented; the remaining progress-report deliverables are still pending.
 - **November 16:** Complete inventory management functionality.
 - **November 30:** Complete application development and testing.
 - **December 7–9:** Final presentation, demonstration, and GitHub submission.
