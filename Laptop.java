@@ -1,36 +1,18 @@
-public class Laptop{
-    private Device device;
-    private int batteryHealth;
-    private double screenSize;
+/** A laptop is a kind of Device (inheritance). */
+public class Laptop extends Device {
+    private final double screenSize;
 
-    public Laptop(Device computer, int health, double size) {
-        device = computer;
-        batteryHealth = health;
-        screenSize = size;
+    public Laptop(String assetTag, String manufacturer, String model,
+                  String status, String assignedTo, double screenSize) {
+        super(assetTag, manufacturer, model, status, assignedTo);
+        if (screenSize <= 0) {
+            throw new IllegalArgumentException("Screen size must be positive.");
+        }
+        this.screenSize = screenSize;
     }
 
-    public Device getDevice() {
-        return device;
-    }
+    public double getScreenSize() { return screenSize; }
 
-    public int getBatteryHealth() {
-        return batteryHealth;
-    }
-
-    public double getScreenSize() {
-        return screenSize;
-    }
-
-    public void setDevice(Device newDevice) {
-        device = newDevice;
-    }
-
-    public void setBatteryHealth(int newBatteryHealth) {
-        batteryHealth = newBatteryHealth;
-    }
-
-    public void setScreenSize(double newScreenSize) {
-        screenSize = newScreenSize;
-    }
-
+    @Override
+    public String getDeviceType() { return "Laptop"; }
 }
