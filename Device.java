@@ -1,99 +1,48 @@
-public class Device{
-    private String assetTag;
-    private String manufacturer;
-    private String model;
-    private String serialNumber;
-    private String processor;
-    private int ramGB;
-    private int storageGB;
+/**
+ * A computer tracked by AssetTrack.
+ * Keep device data small so it is easy to demonstrate and maintain.
+ */
+public class Device {
+    private final String assetTag;
+    private final String manufacturer;
+    private final String model;
     private String status;
     private String assignedTo;
 
-    public Device(String tag, String companyName, String modelName, String serial, String cpu, int memoryGB, int diskGB, String initialStatus, String user) {
-        assetTag = tag;
-        manufacturer = companyName;
-        model = modelName;
-        serialNumber = serial;
-        processor = cpu;
-        ramGB = memoryGB;
-        storageGB = diskGB;
-        status = initialStatus;
-        assignedTo = user;
+    public Device(String assetTag, String manufacturer, String model, String status, String assignedTo) {
+        if (assetTag == null || assetTag.isBlank()) {
+            throw new IllegalArgumentException("Asset tag is required.");
+        }
+        this.assetTag = assetTag.trim();
+        this.manufacturer = manufacturer == null ? "" : manufacturer.trim();
+        this.model = model == null ? "" : model.trim();
+        setStatus(status);
+        setAssignedTo(assignedTo);
     }
 
-    // All Nine Getters
+    public String getAssetTag() { return assetTag; }
+    public String getManufacturer() { return manufacturer; }
+    public String getModel() { return model; }
+    public String getStatus() { return status; }
+    public String getAssignedTo() { return assignedTo; }
 
-    public String getAssetTag() {
-        return assetTag;
+    public void setStatus(String status) {
+        if (!"Available".equals(status) && !"Deployed".equals(status)
+                && !"In Repair".equals(status) && !"Retired".equals(status)) {
+            throw new IllegalArgumentException("Choose a valid status.");
+        }
+        this.status = status;
     }
 
-    public String getManufacturer(){
-        return manufacturer;
+    public void setAssignedTo(String assignedTo) {
+        this.assignedTo = assignedTo == null ? "" : assignedTo.trim();
     }
 
-    public String getModel(){
-        return model;
-    }
+    /** Overridden by Laptop to demonstrate polymorphism. */
+    public String getDeviceType() { return "Desktop"; }
 
-    public String getSerialNumber(){
-        return serialNumber;
-    }
-
-    public String getProcessor(){
-        return processor;
-    }
-
-    public int getRamGB(){
-        return ramGB;
-    }
-
-    public int getStorageGB(){
-        return storageGB;
-    }
-
-    public String getStatus(){
-        return status;
-    }
-
-    public String getAssignedTo(){
-        return assignedTo;
-    }
-
-    // All Nine Setters
-
-    public void setAssetTag(String newAssetTag){
-        assetTag = newAssetTag;
-    }
-
-    public void setManufacturer(String newManufacturer){
-        manufacturer = newManufacturer;
-    }
-
-    public void setModel(String newModel){
-        model = newModel;
-    }
-
-    public void setSerialNumber(String newSerialNumber){
-        serialNumber = newSerialNumber;
-    }
-
-    public void setProcessor(String newProcessor){
-        processor = newProcessor;
-    }
-
-    public void setRamGB(int newRamGB){
-        ramGB = newRamGB;
-    }
-
-    public void setStorageGB(int newStorageGB){
-        storageGB = newStorageGB;
-    }
-
-    public void setStatus(String newStatus) {
-        status = newStatus;
-    }
-
-    public void setAssignedTo(String newAssignedTo){
-        assignedTo = newAssignedTo;
+    @Override
+    public String toString() {
+        return assetTag + " - " + manufacturer + " " + model + " (" + getDeviceType() + ")";
     }
 }
