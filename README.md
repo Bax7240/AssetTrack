@@ -108,13 +108,11 @@ The initial proposal included a desktop subclass, maintenance records, separate 
 ## Course submission plan
 
 - **October 2:** Initial proposal and UML (previously submitted).
-- **November 2 checkpoint:** Submit UI screenshot/sketch, core class code with comments, 2–3 milestone plan, and challenges/solutions table. See [checkpoint notes](docs/CHECKPOINT.md).
+- **November 2 checkpoint:** Submit UI screenshot/sketch, core class code with comments, 2–3 milestone plan, and challenges/solutions table.
 - **November 16:** Test add/remove/search/status flows and fix issues.
 - **November 30:** Finalize manuals and rehearse live demonstration.
 - **December 7 or 9:** Presentation/demo (assigned session).
 - **December 9:** GitHub repository and documentation submission.
-
-Read the [User Manual](docs/USER_MANUAL.md) and [Implementation Manual](docs/IMPLEMENTATION.md).
 
 ### Five-minute demo
 
