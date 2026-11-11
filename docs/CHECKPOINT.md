@@ -2,7 +2,7 @@
 
 ## UI design
 
-One window: title, search input, inventory table, and buttons for Add Device, Update Status, and Remove Selected. Take a screenshot of the running JavaFX window before submission. The source layout is in `AssetTrackApp.java`.
+One window: title, search input, inventory table, and buttons for Add Device, Edit Device, and Remove Selected. Add and Edit share a form for all Lite device fields. Take a screenshot of the running JavaFX window before submission. The source layout is in `AssetTrackApp.java`.
 
 ## Core class
 

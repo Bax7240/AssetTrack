@@ -11,7 +11,9 @@ AssetTrack Lite is a small JavaFX desktop inventory app for tracking campus or h
 - View sample inventory in one window.
 - Add a laptop or desktop with an asset tag, manufacturer, model, status, and assignment.
 - Search by tag, manufacturer, model, or type.
-- Update a selected device's status.
+- Update a selected device's status through Edit Device.
+- Edit all device fields, rename asset tags, or switch between desktop and laptop.
+- Enter laptop screen size in inches when adding or editing.
 - Remove a selected device.
 - Reject duplicate asset tags.
 - **Important:** data is stored only in memory and resets when the app closes. No database or file persistence is promised.
@@ -22,6 +24,16 @@ Requires **JDK 17 or newer**, **Maven**, and a desktop environment. From the rep
 
 ```bash
 mvn clean javafx:run
+```
+
+For a console-only example, compile with `mvn compile`, then run
+`java -cp target/classes DeviceDemo`.
+
+Run the model regression checks without JavaFX or extra test libraries:
+
+```bash
+javac -d target/checks Device.java Laptop.java InventoryManager.java tests/InventoryTest.java
+java -ea -cp target/checks InventoryTest
 ```
 
 On Linux Mint, install a JDK and Maven if needed, for example `sudo apt install openjdk-17-jdk maven`. Maven downloads JavaFX dependencies automatically. VS Code can open this repository as a Maven project.
@@ -67,6 +79,7 @@ classDiagram
         -ArrayList~Device~ devices
         +addDevice(Device) boolean
         +removeDevice(String) boolean
+        +updateDevice(String, Device) boolean
         +findByTag(String) Device
         -findByTag(String, int) Device
         +search(String) List~Device~
@@ -78,7 +91,8 @@ classDiagram
         +start(Stage) void
         -refresh() void
         -addDevice() void
-        -updateStatus() void
+        -editDevice() void
+        -showDeviceForm(Device) void
         -removeDevice() void
         +main(String[]) void
     }

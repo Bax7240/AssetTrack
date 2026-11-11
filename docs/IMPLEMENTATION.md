@@ -29,16 +29,39 @@ Manual checks:
 - Search for `laptop` and confirm the laptop type is matched.
 - Add a unique tag and confirm the row appears.
 - Try to add the same tag twice and confirm the warning.
-- Select a device, update status, and confirm the new value.
+- Select a device, choose Edit Device, change its status, save, and confirm the new value.
 - Remove a selected device and confirm it disappears.
 - Clear search and confirm all remaining devices return.
 - Reopen app and confirm sample inventory resets.
 
 These steps are a **testing checklist**, not a claim they have already been executed in every environment.
 
+Automated model checks are in `tests/InventoryTest.java`; run the commands in
+the README with `-ea` to enable assertions. They cover duplicate tags, recursive
+lookup, search (including a Turkish default locale), defensive list copies,
+status validation, laptop screen sizes, and removal. `DeviceDemo.java` is an
+optional console entry point and is not an additional application model class.
+
+Invalid or duplicate tags keep the Add dialog open so entered fields are retained.
+Laptop sizes reject non-finite values, and search uses `Locale.ROOT` so matching
+does not depend on the computer's language settings.
+
 ## Intentional limitations
 
-There is no persistence, authentication, maintenance history, or database. The screen size for new laptops is set to 14 inches to avoid adding more forms and complexity. No desktop-specific subclass is needed for the small demo.
+There is no persistence, authentication, maintenance history, or database. No desktop-specific subclass is needed for the small demo.
+
+## Editing devices
+
+The Add and Edit actions share `showDeviceForm(Device)`. Edit pre-fills every field,
+including laptop screen size. Validation keeps the dialog open on invalid input.
+Cancel makes no changes. Save creates a replacement `Device` or `Laptop`, allowing
+device type changes while keeping identity fields immutable on each object.
+`InventoryManager.updateDevice(originalTag, replacement)` checks for duplicate tags
+before replacing the original at the same list position. The table refreshes and
+reapplies the active search after saving. The Screen Size column shows laptop sizes.
+
+Regression checks cover tag renaming, duplicate collisions with no partial update,
+missing originals, null replacements, and conversion between device types.
 
 ## Presentation
 

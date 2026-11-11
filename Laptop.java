@@ -5,7 +5,7 @@ public class Laptop extends Device {
     public Laptop(String assetTag, String manufacturer, String model,
                   String status, String assignedTo, double screenSize) {
         super(assetTag, manufacturer, model, status, assignedTo);
-        if (screenSize <= 0) {
+        if (!Double.isFinite(screenSize) || screenSize <= 0) {
             throw new IllegalArgumentException("Screen size must be positive.");
         }
         this.screenSize = screenSize;

@@ -34,6 +34,8 @@ public class AssetTrackApp extends Application {
         addColumn("Model", Device::getModel);
         addColumn("Status", Device::getStatus);
         addColumn("Assigned To", Device::getAssignedTo);
+        addColumn("Screen Size", device -> device instanceof Laptop
+                ? ((Laptop) device).getScreenSize() + " inches" : "");
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setPlaceholder(new Label("No devices match your search."));
 
@@ -41,13 +43,13 @@ public class AssetTrackApp extends Application {
         search.textProperty().addListener((obs, oldValue, newValue) -> refresh());
 
         Button add = new Button("Add Device");
-        Button update = new Button("Update Status");
+        Button edit = new Button("Edit Device");
         Button remove = new Button("Remove Selected");
         add.setOnAction(e -> addDevice());
-        update.setOnAction(e -> updateStatus());
+        edit.setOnAction(e -> editDevice());
         remove.setOnAction(e -> removeDevice());
 
-        HBox buttons = new HBox(8, add, update, remove);
+        HBox buttons = new HBox(8, add, edit, remove);
         VBox root = new VBox(10, new Label("AssetTrack Lite"), search, table, buttons,
                 new Label("Demo inventory is not saved when you exit."));
         root.setPadding(new Insets(15));
@@ -68,71 +70,93 @@ public class AssetTrackApp extends Application {
 
     private void refresh() {
         table.setItems(FXCollections.observableArrayList(inventory.search(search.getText())));
+        // Device uses plain Java fields, so existing cells need to reread their values.
+        table.refresh();
     }
 
     private void addDevice() {
-        Dialog<Device> dialog = new Dialog<>();
-        dialog.setTitle("Add Device");
-        ButtonType addButton = new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(addButton, ButtonType.CANCEL);
-
-        TextField tag = new TextField();
-        TextField manufacturer = new TextField();
-        TextField model = new TextField();
-        TextField assigned = new TextField();
-        ComboBox<String> type = new ComboBox<>(FXCollections.observableArrayList("Desktop", "Laptop"));
-        type.setValue("Desktop");
-        ComboBox<String> status = new ComboBox<>(FXCollections.observableArrayList(
-                "Available", "Deployed", "In Repair", "Retired"));
-        status.setValue("Available");
-
-        GridPane fields = new GridPane();
-        fields.setHgap(10);
-        fields.setVgap(10);
-        fields.setPadding(new Insets(12));
-        String[] labels = {"Asset tag", "Manufacturer", "Model", "Assigned to", "Type", "Status"};
-        Control[] inputs = {tag, manufacturer, model, assigned, type, status};
-        for (int i = 0; i < labels.length; i++) {
-            fields.add(new Label(labels[i]), 0, i);
-            fields.add(inputs[i], 1, i);
-        }
-        dialog.getDialogPane().setContent(fields);
-        dialog.setResultConverter(button -> {
-            if (button != addButton) return null;
-            try {
-                if ("Laptop".equals(type.getValue())) {
-                    return new Laptop(tag.getText(), manufacturer.getText(), model.getText(),
-                            status.getValue(), assigned.getText(), 14);
-                }
-                return new Device(tag.getText(), manufacturer.getText(), model.getText(),
-                        status.getValue(), assigned.getText());
-            } catch (IllegalArgumentException ex) {
-                showError(ex.getMessage());
-                return null;
-            }
-        });
-        dialog.showAndWait().ifPresent(device -> {
-            if (!inventory.addDevice(device)) {
-                showError("That asset tag already exists.");
-            }
-            refresh();
-        });
+        showDeviceForm(null);
     }
 
-    private void updateStatus() {
+    private void editDevice() {
         Device selected = table.getSelectionModel().getSelectedItem();
         if (selected == null) {
             showError("Select a device first.");
             return;
         }
-        ChoiceDialog<String> dialog = new ChoiceDialog<>(selected.getStatus(),
-                "Available", "Deployed", "In Repair", "Retired");
-        dialog.setTitle("Update Status");
-        dialog.setHeaderText(selected.getAssetTag());
-        dialog.setContentText("New status:");
-        dialog.showAndWait().ifPresent(value -> {
-            selected.setStatus(value);
+        showDeviceForm(selected);
+    }
+
+    /** Shared form: edits are applied only after successful validation and Save. */
+    private void showDeviceForm(Device original) {
+        boolean editing = original != null;
+        Dialog<Device> dialog = new Dialog<>();
+        dialog.setTitle(editing ? "Edit Device" : "Add Device");
+        dialog.initOwner(table.getScene().getWindow());
+        ButtonType saveButton = new ButtonType(editing ? "Save" : "Add", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButton, ButtonType.CANCEL);
+
+        TextField tag = new TextField(editing ? original.getAssetTag() : "");
+        TextField manufacturer = new TextField(editing ? original.getManufacturer() : "");
+        TextField model = new TextField(editing ? original.getModel() : "");
+        TextField assigned = new TextField(editing ? original.getAssignedTo() : "");
+        ComboBox<String> type = new ComboBox<>(FXCollections.observableArrayList("Desktop", "Laptop"));
+        type.setValue(editing ? original.getDeviceType() : "Desktop");
+        ComboBox<String> status = new ComboBox<>(FXCollections.observableArrayList(
+                "Available", "Deployed", "In Repair", "Retired"));
+        status.setValue(editing ? original.getStatus() : "Available");
+        TextField screen = new TextField(original instanceof Laptop
+                ? Double.toString(((Laptop) original).getScreenSize()) : "14");
+        screen.disableProperty().bind(type.valueProperty().isNotEqualTo("Laptop"));
+
+        GridPane fields = new GridPane();
+        fields.setHgap(10);
+        fields.setVgap(10);
+        fields.setPadding(new Insets(12));
+        String[] labels = {"Asset tag", "Manufacturer", "Model", "Assigned to", "Type", "Status", "Screen size (inches)"};
+        Control[] inputs = {tag, manufacturer, model, assigned, type, status, screen};
+        for (int i = 0; i < labels.length; i++) {
+            Label label = new Label(labels[i]);
+            label.setLabelFor(inputs[i]);
+            fields.add(label, 0, i);
+            fields.add(inputs[i], 1, i);
+        }
+        dialog.getDialogPane().setContent(fields);
+        // Build a validated replacement without mutating the original on Cancel or error.
+        final Device[] validated = new Device[1];
+        dialog.getDialogPane().lookupButton(saveButton).addEventFilter(
+                javafx.event.ActionEvent.ACTION, event -> {
+                    try {
+                        Device duplicate = inventory.findByTag(tag.getText());
+                        if (duplicate != null && duplicate != original) {
+                            throw new IllegalArgumentException("That asset tag already exists.");
+                        }
+                        if ("Laptop".equals(type.getValue())) {
+                            double size;
+                            try { size = Double.parseDouble(screen.getText().trim()); }
+                            catch (NumberFormatException ex) {
+                                throw new IllegalArgumentException("Enter a numeric screen size in inches.");
+                            }
+                            validated[0] = new Laptop(tag.getText(), manufacturer.getText(), model.getText(),
+                                    status.getValue(), assigned.getText(), size);
+                        } else {
+                            validated[0] = new Device(tag.getText(), manufacturer.getText(), model.getText(),
+                                    status.getValue(), assigned.getText());
+                        }
+                    } catch (IllegalArgumentException ex) {
+                        event.consume();
+                        showError(ex.getMessage());
+                    }
+                });
+        dialog.setResultConverter(button -> button == saveButton ? validated[0] : null);
+        dialog.showAndWait().ifPresent(device -> {
+            boolean saved = editing ? inventory.updateDevice(original.getAssetTag(), device)
+                    : inventory.addDevice(device);
+            if (!saved) showError("Unable to save: the asset tag is already in use or the device was removed.");
             refresh();
+            if (saved && table.getItems().contains(device)) {
+                table.getSelectionModel().select(device);
+            }
         });
     }
 
