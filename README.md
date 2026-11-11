@@ -113,7 +113,3 @@ The initial proposal included a desktop subclass, maintenance records, separate 
 - **November 30:** Finalize manuals and rehearse live demonstration.
 - **December 7 or 9:** Presentation/demo (assigned session).
 - **December 9:** GitHub repository and documentation submission.
-
-### Five-minute demo
-
-Launch the app, show the seeded sample devices, search for `TAG003`, add a laptop, change its status, and remove it. Point out `Laptop extends Device` and the recursive `findByTag` method in the source.
