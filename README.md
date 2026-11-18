@@ -1,22 +1,22 @@
-# AssetTrack Lite
+# AssetTrack
 
 **Course:** CSI 2300 Object Oriented Computing  
 **Team:** AssetTrack Development  
 **Member:** Scott
 
-AssetTrack Lite is a small JavaFX desktop inventory app for tracking campus or help-desk computers. It is inspired by equipment inventory work at the OU Tech Center. This version deliberately limits scope to the course objectives and a short live demonstration.
+AssetTrack is a JavaFX desktop inventory app for tracking campus or help-desk computers: what each device is, where it is, who has it, and what state it is in. It is inspired by equipment inventory work at the OU Tech Center. Scope is kept focused on the course objectives and a short live demonstration.
 
 ## Features
 
-- View sample inventory in one window.
-- Add a laptop or desktop with an asset tag, manufacturer, model, status, and assignment.
-- Search by tag, manufacturer, model, or type.
-- Update a selected device's status through Edit Device.
-- Edit all device fields, rename asset tags, or switch between desktop and laptop.
-- Enter laptop screen size in inches when adding or editing.
-- Remove a selected device.
-- Reject duplicate asset tags.
-- **Important:** data is stored only in memory and resets when the app closes. No database or file persistence is promised.
+- View the inventory in one sortable table (tag, type, manufacturer, model, status, assignee, location, details).
+- Add a desktop or laptop with an asset tag, manufacturer, model, status, assignee, and location.
+- Enter a laptop's screen size in inches when adding or editing.
+- Edit every field of a device, rename its asset tag, or switch it between desktop and laptop.
+- Double-click a row to edit it.
+- Search across **every** field, e.g. `in repair`, `Deployed`, a person's name, or a building.
+- Remove a selected device, with a confirmation prompt.
+- Reject duplicate asset tags (case-insensitive).
+- **Automatic saving:** the inventory is saved to `assettrack-inventory.csv` in your home folder after every add, edit, and remove, and reloaded on the next start.
 
 ## Run
 
@@ -29,26 +29,38 @@ mvn clean javafx:run
 For a console-only example, compile with `mvn compile`, then run
 `java -cp target/classes DeviceDemo`.
 
-Run the model regression checks without JavaFX or extra test libraries:
+Run the model and save/load regression checks without JavaFX or extra test libraries:
 
 ```bash
-javac -d target/checks Device.java Laptop.java InventoryManager.java tests/InventoryTest.java
+javac -d target/checks Status.java Device.java Desktop.java Laptop.java InventoryManager.java tests/InventoryTest.java
 java -ea -cp target/checks InventoryTest
 ```
 
 On Linux Mint, install a JDK and Maven if needed, for example `sudo apt install openjdk-17-jdk maven`. Maven downloads JavaFX dependencies automatically. VS Code can open this repository as a Maven project.
 
+## Using AssetTrack
+
+1. **First launch:** the app starts with three sample devices. After that it loads whatever you last saved.
+2. **Add:** click **Add Device**, fill in the form, choose **Desktop** or **Laptop**, and click **Add**. The screen size field is only enabled for laptops. Asset tag is required; invalid input shows a warning and keeps the form open so you can fix it.
+3. **Edit:** select a row and click **Edit Device**, or double-click the row. Changes apply only when you click **Save**; **Cancel** leaves the device untouched.
+4. **Search:** type in the search box. The table filters as you type and matches any field.
+5. **Remove:** select a row, click **Remove Selected**, and confirm.
+6. **Reset to sample data:** close the app and delete `assettrack-inventory.csv` from your home folder.
+
 ## Course concepts
 
 | Concept | Where to find it |
 |---|---|
-| Classes, objects, encapsulation | `Device.java` |
-| Inheritance | `Laptop extends Device` |
-| Polymorphism | `Laptop.getDeviceType()`, JavaFX Type column |
-| Conditions | status validation, duplicate checks |
-| Loops | inventory search, seeded records, form construction |
+| Classes, objects, encapsulation | `Device.java` (private fields, validated setters) |
+| Abstract classes | `Device` is `abstract`; every device is a `Desktop` or `Laptop` |
+| Inheritance | `Desktop extends Device`, `Laptop extends Device` |
+| Polymorphism | `getDeviceType()`, `getDetails()`, `getExtraValue()` overridden per subclass; the JavaFX Type and Details columns and CSV saving call them without checking the class |
+| Enums | `Status.java` (Available, Deployed, In Repair, Retired) |
+| Conditions | status/tag validation, duplicate checks, device type selection in `createDevice` |
+| Loops | inventory search, sample records, form construction, CSV reading and writing |
 | Recursion | `InventoryManager.findByTag(String, int)` |
-| Strings and arrays | string search, `String[][] examples` |
+| Strings and arrays | CSV parsing in `parseCsvLine`, string search, `String[][] examples`, form label/input arrays |
+| File I/O and exceptions | `InventoryManager.saveToFile` / `loadFromFile` |
 | GUI | `AssetTrackApp.java` (JavaFX) |
 
 ## Current UML class diagram
@@ -56,24 +68,48 @@ On Linux Mint, install a JDK and Maven if needed, for example `sudo apt install 
 ```mermaid
 classDiagram
     class Device {
+        <<abstract>>
         -String assetTag
         -String manufacturer
         -String model
-        -String status
+        -Status status
         -String assignedTo
+        -String location
         +getAssetTag() String
         +getManufacturer() String
         +getModel() String
-        +getStatus() String
-        +setStatus(String) void
+        +getStatus() Status
+        +setStatus(Status) void
         +getAssignedTo() String
         +setAssignedTo(String) void
+        +getLocation() String
+        +setLocation(String) void
+        +getSearchText() String
+        +getDeviceType() String*
+        +getDetails() String*
+        +getExtraValue() String*
+    }
+    class Desktop {
         +getDeviceType() String
+        +getDetails() String
+        +getExtraValue() String
     }
     class Laptop {
         -double screenSize
         +getScreenSize() double
         +getDeviceType() String
+        +getDetails() String
+        +getExtraValue() String
+    }
+    class Status {
+        <<enumeration>>
+        AVAILABLE
+        DEPLOYED
+        IN_REPAIR
+        RETIRED
+        -String label
+        +fromText(String) Status$
+        +toString() String
     }
     class InventoryManager {
         -ArrayList~Device~ devices
@@ -84,26 +120,43 @@ classDiagram
         -findByTag(String, int) Device
         +search(String) List~Device~
         +getDevices() List~Device~
+        +size() int
+        +createDevice(String, String, String, String, Status, String, String, String) Device$
+        +saveToFile(Path) void
+        +loadFromFile(Path) int
+        -toCsvLine(String[]) String$
+        -parseCsvLine(String) String[]$
     }
     class AssetTrackApp {
+        -Path SAVE_FILE$
         -InventoryManager inventory
         -TableView~Device~ table
+        -TextField search
         +start(Stage) void
+        -loadInventory() void
+        -saveInventory() void
         -refresh() void
-        -addDevice() void
         -editDevice() void
-        -showDeviceForm(Device) void
         -removeDevice() void
+        -showDeviceForm(Device) void
         +main(String[]) void
     }
+    Device <|-- Desktop
     Device <|-- Laptop
+    Device --> Status
     InventoryManager "1" o-- "*" Device
     AssetTrackApp --> InventoryManager
 ```
 
 ## Scope change from original proposal
 
-The initial proposal included a desktop subclass, maintenance records, separate data manager, and local file persistence. The simplified implementation removes these to focus on working GUI operations and clear object-oriented examples. `Device` now represents a desktop by default, and `Laptop` inherits from it. This is a **revision of the conceptual design**, not a claim that the original proposal was implemented unchanged.
+The initial proposal included a desktop subclass, maintenance records, a separate data manager, and local file persistence.
+
+- **Implemented:** the `Desktop` subclass (with `Device` now abstract) and local file persistence (automatic CSV save/load).
+- **Changed:** saving and loading live in `InventoryManager` instead of a separate data manager class, to keep the design small.
+- **Not implemented:** maintenance records.
+
+This is a **revision of the conceptual design**, not a claim that the original proposal was implemented unchanged.
 
 ## Course submission plan
 
