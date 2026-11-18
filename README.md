@@ -26,6 +26,8 @@ Requires **JDK 17 or newer**, **Maven**, and a desktop environment. From the rep
 mvn clean javafx:run
 ```
 
+**Running from VS Code or another IDE:** run `Launcher.java`, not `AssetTrackApp.java`. Starting `AssetTrackApp` directly gives *"Error: JavaFX runtime components are missing"*, because Java will not launch a class that extends `Application` unless JavaFX is on the module path. `Launcher` is a plain class that starts the app and avoids that check.
+
 For a console-only example, compile with `mvn compile`, then run
 `java -cp target/classes DeviceDemo`.
 
@@ -61,7 +63,7 @@ On Linux Mint, install a JDK and Maven if needed, for example `sudo apt install 
 | Recursion | `InventoryManager.findByTag(String, int)` |
 | Strings and arrays | CSV parsing in `parseCsvLine`, string search, `String[][] examples`, form label/input arrays |
 | File I/O and exceptions | `InventoryManager.saveToFile` / `loadFromFile` |
-| GUI | `AssetTrackApp.java` (JavaFX) |
+| GUI | `AssetTrackApp.java` (JavaFX), started by `Launcher.java` |
 
 ## Current UML class diagram
 
@@ -147,16 +149,6 @@ classDiagram
     InventoryManager "1" o-- "*" Device
     AssetTrackApp --> InventoryManager
 ```
-
-## Scope change from original proposal
-
-The initial proposal included a desktop subclass, maintenance records, a separate data manager, and local file persistence.
-
-- **Implemented:** the `Desktop` subclass (with `Device` now abstract) and local file persistence (automatic CSV save/load).
-- **Changed:** saving and loading live in `InventoryManager` instead of a separate data manager class, to keep the design small.
-- **Not implemented:** maintenance records.
-
-This is a **revision of the conceptual design**, not a claim that the original proposal was implemented unchanged.
 
 ## Course submission plan
 
